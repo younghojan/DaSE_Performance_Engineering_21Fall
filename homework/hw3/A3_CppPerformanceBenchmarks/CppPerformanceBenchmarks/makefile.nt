@@ -1,0 +1,224 @@
+#
+#    Copyright 2007-2009 Adobe Systems Incorporated
+#    Copyright 2018-2019 Chris Cox
+#    Distributed under the MIT License (see accompanying file LICENSE_1_0_0.txt
+#    or a copy at http://stlab.adobe.com/licenses.html )
+#
+
+###################################################
+#
+# Makefile for C++ benchmarks
+#  This is a Windows specific makefile derived from makefile
+#
+###################################################
+
+
+
+# Microsoft compiler
+#CC = cl
+#CPP = cl
+
+
+# Intel compiler
+#CC = icl
+#CPP = icl
+
+
+# GCC
+#CC = gcc -mwindows
+#CPP = g++ -mwindows
+
+
+
+
+# don't show a logo each time, full optimization, define WIN32 and NDEBUG
+CFLAGS = /nologo /Ox /std:c++14 /D "WIN32" /D "NDEBUG" /I "$(INCLUDE)"
+# same as above, forcing C++ and normal exception handling
+CPPFLAGS = /nologo /Ox /std:c++14 /TP /EHsc /D "WIN32" /D "NDEBUG" /I "$(INCLUDE)"
+
+
+
+
+#
+# our target programs
+#
+
+BINARIES = machine.exe \
+stepanov_abstraction.exe \
+stepanov_vector.exe \
+stepanov_inherit.exe \
+stepanov_array.exe \
+loop_unroll.exe \
+simple_types_loop_invariant.exe \
+functionobjects.exe \
+simple_types_constant_folding.exe \
+atol.exe \
+ctype.exe \
+scalar_replacement_arrays.exe \
+scalar_replacement_array_reduction.exe \
+scalar_replacement_structs.exe \
+byte_order.exe \
+exceptions.exe \
+exceptions_cpp.exe \
+mathlib.exe \
+shift.exe \
+absolute_value.exe \
+divide.exe \
+loop_normalize.exe \
+random_numbers.exe \
+clock_time.exe \
+inner_product.exe \
+rotate_bits.exe \
+rtti.exe \
+locales.exe \
+lookup_table.exe \
+loop_induction.exe \
+loop_removal.exe \
+minmax.exe \
+bitarrays.exe \
+histogram.exe \
+iostreams.exe \
+loop_fusion.exe \
+count_sequence.exe \
+memset.exe \
+reference_normalization.exe \
+simple_types_algebraic_simplification.exe \
+complex_type.exe \
+custom_types_loop_invariant.exe \
+loop_interchange.exe \
+memcmp.exe \
+simple_types_constant_propagation.exe \
+memcpy.exe \
+simple_types_copy_propagation.exe \
+simple_types_cse.exe \
+simple_types_value_range.exe \
+memmove.exe \
+minmax_sequence.exe \
+pointer_loop_invariant.exe \
+smart_pointers.exe \
+convolution.exe \
+reverse_sequence.exe \
+simple_types_strength_reduction.exe \
+sum_sequence.exe \
+convolution_box.exe \
+logic_sequence.exe \
+matrix_vector_product.exe \
+product_sequence.exe \
+binary_search.exe \
+loop_unswitching.exe \
+template_unroll.exe
+
+
+#
+# Build rules
+#
+
+all : $(BINARIES)
+
+
+SUFFIXES:
+.SUFFIXES: .c .cpp
+
+
+# declare some targets to be fakes without real dependencies
+
+.PHONY : clean dependencies
+
+# remove all the stuff we build
+
+clean : 
+		del -f *.o *.obj $(BINARIES)
+
+
+#
+# special case compiles
+#
+
+exceptions_cpp.exe : exceptions.c
+	$(CPP) $(CPPFLAGS) /D "TEST_WITH_EXCEPTIONS=1" -o exceptions_cpp.exe exceptions.c
+
+# work around lame decision to have OS version APIs lie to the developer/user
+machine.exe: machine.cpp
+	$(CPP) $(CPPFLAGS) -o machine.exe machine.cpp /link netapi32.lib
+	mt.exe -manifest machine.manifest -outputresource:machine.exe
+
+
+
+#
+# Run the benchmarks and generate a report
+#
+REPORT_FILE = report.txt
+
+report:  $(BINARIES)
+	@echo "##STARTING Version 1.0" > $(REPORT_FILE)
+	@echo %%DATE%% %%TIME%% >>$(REPORT_FILE)
+	@echo "##CFlags: $(CFLAGS)" >> $(REPORT_FILE)
+	@echo "##CPPFlags: $(CPPFLAGS)" >> $(REPORT_FILE)
+	.\machine.exe >> $(REPORT_FILE)
+	.\stepanov_abstraction.exe >> $(REPORT_FILE)
+	.\stepanov_vector.exe >> $(REPORT_FILE)
+	.\stepanov_inherit.exe >> $(REPORT_FILE)
+	.\stepanov_array.exe >> $(REPORT_FILE)
+	.\functionobjects.exe >> $(REPORT_FILE)
+	.\simple_types_constant_folding.exe >> $(REPORT_FILE)
+	.\simple_types_loop_invariant.exe >> $(REPORT_FILE)
+	.\loop_unroll.exe >> $(REPORT_FILE)
+	.\atol.exe >> $(REPORT_FILE)
+	.\ctype.exe >> $(REPORT_FILE)
+	.\scalar_replacement_arrays.exe >> $(REPORT_FILE)
+	.\scalar_replacement_array_reduction.exe >> $(REPORT_FILE)
+	.\scalar_replacement_structs.exe  >> $(REPORT_FILE)
+	.\byte_order.exe >> $(REPORT_FILE)
+	.\exceptions.exe >> $(REPORT_FILE)
+	.\exceptions_cpp.exe >> $(REPORT_FILE)
+	.\mathlib.exe >> $(REPORT_FILE)
+	.\shift.exe >> $(REPORT_FILE)
+	.\absolute_value.exe >> $(REPORT_FILE)
+	.\divide.exe >> $(REPORT_FILE)
+	.\loop_normalize.exe >> $(REPORT_FILE)
+	.\random_numbers.exe >> $(REPORT_FILE)
+	.\clock_time.exe >> $(REPORT_FILE)
+	.\inner_product.exe >> $(REPORT_FILE)
+	.\rotate_bits.exe >> $(REPORT_FILE)
+	.\rtti.exe >> $(REPORT_FILE)
+	.\locales.exe >> $(REPORT_FILE)
+	.\lookup_table.exe >> $(REPORT_FILE)
+	.\loop_induction.exe >> $(REPORT_FILE)
+	.\loop_removal.exe >> $(REPORT_FILE)
+	.\minmax.exe >> $(REPORT_FILE)
+	.\bitarrays.exe >> $(REPORT_FILE)
+	.\histogram.exe >> $(REPORT_FILE)
+	.\iostreams.exe $(REPORT_FILE) $(iostreamtemp)
+	del $(iostreamtemp)
+	.\loop_fusion.exe >> $(REPORT_FILE)
+	.\count_sequence.exe >> $(REPORT_FILE)
+	.\memset.exe >> $(REPORT_FILE)
+	.\reference_normalization.exe >> $(REPORT_FILE)
+	.\simple_types_algebraic_simplification.exe >> $(REPORT_FILE)
+	.\complex_type.exe >> $(REPORT_FILE)
+	.\custom_types_loop_invariant.exe >> $(REPORT_FILE)
+	.\loop_interchange.exe >> $(REPORT_FILE)
+	.\memcmp.exe >> $(REPORT_FILE)
+	.\simple_types_constant_propagation.exe >> $(REPORT_FILE)
+	.\memcpy.exe >> $(REPORT_FILE)
+	.\simple_types_copy_propagation.exe >> $(REPORT_FILE)
+	.\simple_types_cse.exe >> $(REPORT_FILE)
+	.\simple_types_value_range.exe >> $(REPORT_FILE)
+	.\memmove.exe >> $(REPORT_FILE)
+	.\minmax_sequence.exe >> $(REPORT_FILE)
+	.\pointer_loop_invariant.exe >> $(REPORT_FILE)
+	.\smart_pointers.exe >> $(REPORT_FILE)
+	.\convolution.exe >> $(REPORT_FILE)
+	.\reverse_sequence.exe >> $(REPORT_FILE)
+	.\simple_types_strength_reduction.exe >> $(REPORT_FILE)
+	.\sum_sequence.exe >> $(REPORT_FILE)
+	.\convolution_box.exe >> $(REPORT_FILE)
+	.\logic_sequence.exe >> $(REPORT_FILE)
+	.\matrix_vector_product.exe >> $(REPORT_FILE)
+	.\product_sequence.exe >> $(REPORT_FILE)
+	.\binary_search.exe >> $(REPORT_FILE)
+	.\loop_unswitching.exe >> $(REPORT_FILE)
+	.\template_unroll.exe >> $(REPORT_FILE)
+	@echo %%DATE%% %%TIME%% >>$(REPORT_FILE)
+	@echo "##END Version 1.0" >> $(REPORT_FILE)
+
